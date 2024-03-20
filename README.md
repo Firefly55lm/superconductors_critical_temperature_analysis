@@ -1,2 +1,2 @@
-# superconductivity_lbd
+# SUPERCONDUCTIVITY
 Big Data Lab project
