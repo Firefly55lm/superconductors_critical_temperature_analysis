@@ -1,29 +1,24 @@
 from pyspark.sql import SparkSession, DataFrame, Column
-from pyspark.ml.feature import StandardScaler, VectorAssembler
-from pyspark.ml.feature import PCA
+from pyspark.ml.feature import StandardScaler, VectorAssembler, PCA
+from pyspark.ml.regression import LinearRegression
+from pyspark.ml.evaluation import RegressionEvaluator
+from pyspark.ml.tuning import CrossValidator, ParamGridBuilder
 
 import pandas as pd
 import numpy as np
+import json
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.lines import Line2D
-from matplotlib.colors import ListedColormap
-from utilities.utils import load_sns_theme
 
 
 class ClusterHandler():
 
-    def __init__(self, data:pd.DataFrame, y:str = None):
-        self.data = data
-        if y:
-            self.y = pd.DataFrame(data[y])
-            self.X = data.drop(columns=[y])
-        else:
-            self.X = data
+    def __init__(self):
+        self.data = None
         self.dataframe = None
-        self.pca_model = None
-        self.pca_result = None
+        self.session = None
 
 
     def run_session(self, name:str = 'Session', type:str = 'local', ip:str = None, port:str = None, config:str = None) -> SparkSession.sparkContext:
@@ -62,51 +57,75 @@ class ClusterHandler():
         self.session = spark
         context = spark.sparkContext
         print(f"\nSession '{context.appName}' created on masternode {context.master}")
-        print(f"Spark UI is available at \033[36m{context.uiWebUrl}\033[0m\n")
+        print(f"Spark UI (jobs tab) is available at \033[36m{context.uiWebUrl}\033[0m\n")
         
         return context
 
 
-    def generate_dataframe(self):
-        self.dataframe = self.session.createDataFrame(self.X)
+    def generate_dataframe(self, data:pd.DataFrame, y:str = None):
+        self.data = data
+        if y:
+            self.y = pd.DataFrame(data["critical_temp"])
+            X = data.drop(columns=["critical_temp"])
+            self.dataframe = self.session.createDataFrame(X)
+        else:
+            self.dataframe = self.session.createDataFrame(data)
 
     
-    def assemble_features(self, assembler:VectorAssembler = None):
+    def assemble_features(self, assembler:VectorAssembler = None, input_columns:list = None, output_column:str = "features"):   
         if not assembler:
-            assembler = VectorAssembler(inputCols=list(self.dataframe.columns[0:]), outputCol="features")
+            if not input_columns:
+                input_columns = list(self.dataframe.columns[0:])
+            assembler = VectorAssembler(inputCols=input_columns, outputCol=output_column)
         self.dataframe = assembler.transform(self.dataframe)
 
 
-    def scale_features(self, scaler:StandardScaler = None, ):
+    def scale_features(self, scaler:StandardScaler = None, input_column:str = "features", output_column:str = "scaledFeatures"):
         if not scaler:
-            scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures", withStd=True, withMean=True)
+            scaler = StandardScaler(inputCol=input_column, outputCol=output_column, withStd=True, withMean=True)
         self.dataframe = scaler.fit(self.dataframe).transform(self.dataframe)
 
 
     def fit_pca(self, model:PCA):
         self.pca_model = model.fit(self.dataframe)
         self.pca_result = self.pca_model.transform(self.dataframe)
-
+        self.pca_coefficients = self.pca_model.pc.toArray()
+        
 
     def extract_pca_coefficients(self, dimension:int):
-        pca_coefficients = self.pca_model.pc.toArray()
-        feat_coeff = {feature: coefficient[dimension] for feature, coefficient in zip(self.data.columns, pca_coefficients)}
+        feat_coeff = {feature: coefficient[dimension] for feature, coefficient in zip(self.dataframe.columns, self.pca_coefficients)}
+        return dict(sorted(feat_coeff.items(), key=lambda x: abs(x[1]), reverse=True))
+
+
+    def fit_lr(self, model:LinearRegression, y_column:str, pred_column:str = "prediction", folds:int = 5, reg_params:list = [0.01, 0.05, 1.0]):
+        
+        param_grid = ParamGridBuilder() \
+                    .addGrid(model.regParam, reg_params) \
+                    .build()
+        
+        evaluator = RegressionEvaluator(predictionCol=pred_column, labelCol=y_column, metricName="r2")
+        cross_validator = CrossValidator(estimator=model, estimatorParamMaps=param_grid, evaluator=evaluator, numFolds=folds)
+
+        cv_model = cross_validator.fit(self.dataframe)
+        self.lr_model = cv_model.bestModel
+        self.lr_coefficients = list(self.lr_model.coefficients)
+
+        return {fold: r2 for fold, r2 in zip(reg_params, cv_model.avgMetrics)}
+        
+
+    def extract_lr_coefficients(self):
+        feat_coeff = {feature: coefficient for feature, coefficient in zip(self.dataframe.columns, self.lr_coefficients)}
         return dict(sorted(feat_coeff.items(), key=lambda x: abs(x[1]), reverse=True))
     
 
     def plot_3d_pca(self, dimensions=list, color_by:str = None):
-        
-        try:
-            load_sns_theme(r"utilities\themes\fire_theme.json")
-        except:
-            raise Exception("\nCannot load any theme. Please, use load_sns_theme from the utils library to load from a json.")
 
         pca_result_sub = self.pca_result.select("pcaFeatures").collect()
         pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
         pca_transposed = list(zip(*pca_values))
 
         if len(dimensions) != 3:
-            raise ValueError("\033[31mYou must provide 3 dimensions to plot.\033[0m")
+            raise ValueError("\033[31mMust provide 3 dimensions to plot.\033[0m")
 
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(111, projection='3d')
@@ -140,8 +159,32 @@ class ClusterHandler():
 
 
 
+def load_sns_theme(theme_path: str, apply:bool = True) -> json:
+    """
+    Loads the Seaborn/Matplolib theme from a json file
+    -----
+    Args:
+        * theme_path: path of the json file
+        * apply: applies the theme to Seaborn if True
+    --------
+    Returns:
+        * A json formatted file
+    """
+
+    with open(theme_path) as file:
+        theme = json.load(file)
+        file.close()
+    
+    if apply is True:
+        sns.set_style("dark", rc=theme)
+    
+    return theme
+
+
+
 if __name__ == "__main__":
 
+    # Quick example with PCA model and local server
     data = pd.read_csv("data/superconductivity.csv")
     y = pd.DataFrame(data["critical_temp"])
     X = data.drop(columns=["critical_temp"])
@@ -159,7 +202,4 @@ if __name__ == "__main__":
 
     print(handler.extract_pca_coefficients(model=pca, dimension=0))
 
-
-
-    
     handler.session.stop()
