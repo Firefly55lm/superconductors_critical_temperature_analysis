@@ -8,9 +8,13 @@ import pandas as pd
 import numpy as np
 import json
 
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from matplotlib.colors import Normalize
 from matplotlib.lines import Line2D
+
 
 
 class ClusterHandler():
@@ -197,13 +201,14 @@ class ClusterHandler():
         return dict(sorted(feat_coeff.items(), key=lambda x: abs(x[1]), reverse=True))
     
 
-    def plot_3d_pca(self, dimensions=list, color_by:str = None):
+    def plot_3d_pca(self, dimensions=list, color_by:str = None, cmap:str = "rocket"):
         """
-        Plots a 3D chart for the given PCA dimensions using MatPlotLib.
+        Plots a 3D chart for the given PCA dimensions using MatPlotLib and Seaborn.
         -----
         Args:
             * dimensions: the 3 dimensions indexes as list of integers (0 is the first).
             * color_by: a variable to dye the scatter's dots. A legend will be created.
+            * cmap: the colormap to use.
         """
 
         pca_result_sub = self.pca_result.select("pcaFeatures").collect()
@@ -224,15 +229,15 @@ class ClusterHandler():
         if color_by:
             color_feature = self.data[color_by].to_numpy()
             ax.scatter(xs=pca_transposed[dimensions[0]], ys=pca_transposed[dimensions[1]], zs=pca_transposed[dimensions[2]],
-                       c=color_feature, cmap="rocket", s=2, alpha=0.6)
+                       c=color_feature, cmap=cmap, norm=Normalize(vmin=0, vmax=100), s=2, alpha=0.6)
             
+            color_map = matplotlib.colormaps.get_cmap(cmap)
             legend_elements = [
-                Line2D([0], [0], marker='o', color='w', markerfacecolor='#f5c5ac', markersize=10, label='Low'),
-                Line2D([0], [0], marker='o', color='w', markerfacecolor='#c6004e', markersize=10, label='Medium'),
-                Line2D([0], [0], marker='o', color='w', markerfacecolor='#251432', markersize=10, label='High')
-            ]
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.1)), markersize=10, label='Low'),
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.5)), markersize=10, label='Medium'),
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.9)), markersize=10, label='High')
+                            ]
 
-        
             legend = ax.legend(handles=legend_elements, title=color_by, loc='upper left', labels=['Low', 'Medium', 'High'])
             for text in legend.get_texts():
                 text.set_color('white')
@@ -241,6 +246,51 @@ class ClusterHandler():
         
         else:
             ax.scatter(xs=pca_transposed[dimensions[0]], ys=pca_transposed[dimensions[1]], zs=pca_transposed[dimensions[2]],
+                       s=2, alpha=0.6, color="orange")
+        plt.show()
+
+
+    def plot_2d_pca(self, dimensions=list, color_by:str = None, cmap:str = "rocket"):
+        """
+        Plots a 2D chart for the given PCA dimensions using MatPlotLib and Seaborn.
+        -----
+        Args:
+            * dimensions: the 2 dimensions indexes as list of integers (0 is the first).
+            * color_by: a variable to dye the scatter's dots. A legend will be created.
+            * cmap: the colormap to use.
+        """
+
+        pca_result_sub = self.pca_result.select("pcaFeatures").collect()
+        pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
+        pca_transposed = list(zip(*pca_values))
+
+        if len(dimensions) != 2:
+            raise ValueError("\033[31mMust provide 2 dimensions to plot.\033[0m")
+
+        plt.xlabel(f'Dimension {dimensions[0]}')
+        plt.ylabel(f'Dimension {dimensions[1]}')
+        plt.title(f'2D PCA scatter for dimensions {dimensions[0]}, {dimensions[1]}', color="black")
+
+        if color_by:
+            color_feature = self.data[color_by].to_numpy()
+            sns.scatterplot(x=pca_transposed[dimensions[0]], y=pca_transposed[dimensions[1]],
+                       c=color_feature, cmap=cmap, norm=Normalize(vmin=0, vmax=100), s=2, alpha=0.6)
+            
+            color_map = matplotlib.colormaps.get_cmap(cmap)
+            legend_elements = [
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.1)), markersize=10, label='Low'),
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.5)), markersize=10, label='Medium'),
+                                Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.9)), markersize=10, label='High')
+                            ]
+
+            legend = plt.legend(handles=legend_elements, title=color_by, loc='upper left', labels=['Low', 'Medium', 'High'])
+            for text in legend.get_texts():
+                text.set_color('white')
+            legend.get_title().set_color('white')
+            legend.get_title().set_weight('bold')
+        
+        else:
+            sns.scatterplot(x=pca_transposed[dimensions[0]], y=pca_transposed[dimensions[1]],
                        s=2, alpha=0.6, color="orange")
         plt.show()
 
@@ -270,23 +320,23 @@ def load_sns_theme(theme_path: str, apply:bool = True) -> json:
 
 
 if __name__ == "__main__":
-
+    pass
     # Quick example with PCA model and local server
-    data = pd.read_csv("data/superconductivity.csv")
-    y = pd.DataFrame(data["critical_temp"])
-    X = data.drop(columns=["critical_temp"])
+    # data = pd.read_csv("data/superconductivity.csv")
+    # y = pd.DataFrame(data["critical_temp"])
+    # X = data.drop(columns=["critical_temp"])
     
-    handler = ClusterHandler(X)
-    handler.run_session()
-    handler.generate_dataframe()
+    # handler = ClusterHandler(X)
+    # handler.run_session()
+    # handler.generate_dataframe()
 
-    handler.assemble_features()
-    handler.scale_features()
+    # handler.assemble_features()
+    # handler.scale_features()
 
-    pca = PCA(k=5, inputCol="scaledFeatures", outputCol="pcaFeatures")
-    pca_result = handler.fit_pca(pca)
-    pca_result.show()
+    # pca = PCA(k=5, inputCol="scaledFeatures", outputCol="pcaFeatures")
+    # pca_result = handler.fit_pca(pca)
+    # pca_result.show()
 
-    print(handler.extract_pca_coefficients(model=pca, dimension=0))
+    # print(handler.extract_pca_coefficients(model=pca, dimension=0))
 
-    handler.session.stop()
+    # handler.session.stop()
