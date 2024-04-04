@@ -163,7 +163,8 @@ class ClusterHandler():
         return dict(sorted(feat_coeff.items(), key=lambda x: abs(x[1]), reverse=True))
 
 
-    def fit_lr(self, model:LinearRegression, y_column:str, pred_column:str = "prediction", folds:int = 5, reg_params:list = [0.01, 0.05, 1.0]) -> dict:
+    def fit_lr(self, model:LinearRegression, y_column:str, pred_column:str = "prediction", folds:int = 5,
+               reg_params:list = [0.001, 0.01, 0.1], elasticnet_params:list = [0, 0.5, 1]) -> dict:
         """
         Fits a LR (Linear Regression) model, tuning the reg_param parameter with a k-fold Cross Validation. The metric is R2.
         -----
@@ -172,7 +173,8 @@ class ClusterHandler():
             * y_column: name of the target y variable as string.
             * pred_column [optional]: the name of the assembled features column as string. "prediction" is default.
             * folds [optional]: number of folds to perform the k-fold Cross Validation. 5 is default.
-            * reg_params [optional]: a list of values for the regularization params to tune the model. [0.01, 0.05, 1.0] are default.
+            * reg_params [optional]: a list of values for the regularization params (lambda) to tune the model. [0.01, 0.05, 1.0] are default.
+            * elasticnet_params [optional]: a list of values for the regularization behavior. 0 is ridge (L2), 1 is lasso (L1), 0.5 is a combination.
         --------
         Returns:
             * CV results: a dictionary with reg_param:metric as key:value pairs.
@@ -182,6 +184,7 @@ class ClusterHandler():
         
         param_grid = ParamGridBuilder() \
                     .addGrid(model.regParam, reg_params) \
+                    .addGrid(model.elasticNetParam, elasticnet_params) \
                     .build()
         
         evaluator = RegressionEvaluator(predictionCol=pred_column, labelCol=y_column, metricName="r2")
@@ -190,8 +193,9 @@ class ClusterHandler():
         cv_model = cross_validator.fit(self.dataframe)
         self.lr_model = cv_model.bestModel
         self.lr_coefficients = list(self.lr_model.coefficients)
+        param_maps = cv_model.getEstimatorParamMaps()
 
-        return {fold: r2 for fold, r2 in zip(reg_params, cv_model.avgMetrics)}
+        return {f"Lambda: {list(params.values())[0]}; Elasticnet param: {list(params.values())[1]}": r2 for params, r2 in zip(param_maps, cv_model.avgMetrics)}
         
 
     def extract_lr_coefficients(self) -> dict:
@@ -342,5 +346,5 @@ class ClusterHandler():
 
 
 if __name__ == "__main__":
-            pass
+        pass
     
