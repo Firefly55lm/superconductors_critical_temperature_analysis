@@ -143,6 +143,10 @@ class ClusterHandler():
         self.pca_model = model.fit(self.dataframe)
         self.pca_result = self.pca_model.transform(self.dataframe)
         self.pca_coefficients = self.pca_model.pc.toArray()
+
+        pca_result_sub = self.pca_result.select("pcaFeatures").collect()
+        pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
+        self.pca_transposed = list(zip(*pca_values))
         
 
     def extract_pca_coefficients(self, dimension:int) -> dict:
@@ -203,21 +207,19 @@ class ClusterHandler():
 
     def plot_3d_pca(self, dimensions=list, color_by:str = None, cmap:str = "rocket"):
         """
-        Plots a 3D chart for the given PCA dimensions using MatPlotLib and Seaborn.
+        Plots a 3D chart for the given PCA dimensions using MatPlotLib.
         -----
         Args:
             * dimensions: the 3 dimensions indexes as list of integers (0 is the first).
             * color_by: a variable to dye the scatter's dots. A legend will be created.
             * cmap: the colormap to use.
         """
-
-        pca_result_sub = self.pca_result.select("pcaFeatures").collect()
-        pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
-        pca_transposed = list(zip(*pca_values))
-
         if len(dimensions) != 3:
             raise ValueError("\033[31mMust provide 3 dimensions to plot.\033[0m")
 
+        pca_transposed = self.pca_transposed
+
+        self.load_theme("dark")
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(111, projection='3d')
         
@@ -252,20 +254,18 @@ class ClusterHandler():
 
     def plot_2d_pca(self, dimensions=list, color_by:str = None, cmap:str = "rocket"):
         """
-        Plots a 2D chart for the given PCA dimensions using MatPlotLib and Seaborn.
+        Plots a 2D chart for the given PCA dimensions using Seaborn.
         -----
         Args:
             * dimensions: the 2 dimensions indexes as list of integers (0 is the first).
             * color_by: a variable to dye the scatter's dots. A legend will be created.
             * cmap: the colormap to use.
         """
-
-        pca_result_sub = self.pca_result.select("pcaFeatures").collect()
-        pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
-        pca_transposed = list(zip(*pca_values))
-
         if len(dimensions) != 2:
             raise ValueError("\033[31mMust provide 2 dimensions to plot.\033[0m")
+
+        self.load_theme("light")
+        pca_transposed = self.pca_transposed
 
         plt.xlabel(f'Dimension {dimensions[0]}')
         plt.ylabel(f'Dimension {dimensions[1]}')
@@ -295,48 +295,52 @@ class ClusterHandler():
         plt.show()
 
 
+    def load_theme(self, theme_name:str) -> dict:
+        """
+        Loads the Seaborn/Matplolib theme.
+        -----
+        Args:
+            * theme_name: the name of the theme ("dark" or "light")
+        --------
+        Returns:
+            * A dictionary with the theme's information.
+        """
 
-def load_sns_theme(theme_path: str, apply:bool = True) -> json:
-    """
-    Loads the Seaborn/Matplolib theme from a json file.
-    -----
-    Args:
-        * theme_path: path of the json file
-        * apply: applies the theme to Seaborn if True
-    --------
-    Returns:
-        * A json formatted file
-    """
-
-    with open(theme_path) as file:
-        theme = json.load(file)
-        file.close()
-    
-    if apply is True:
-        sns.set_style("dark", rc=theme)
-    
-    return theme
+        dark = {
+            "figure.facecolor": "#202021",
+            "axes.facecolor": "#262626",
+            "axes.edgecolor": "#cfcfd1",
+            "axes.grid": True,
+            "grid.color": "#555555",
+            "grid.linewidth": 0.5,
+            "xtick.color": "#ffffff",
+            "ytick.color": "#ffffff",
+            "axes.labelcolor": "#ffffff"
+            }
+        
+        light = {
+            "figure.facecolor": "#ffffff",
+            "axes.facecolor": "#303030",
+            "axes.edgecolor": "#171717",
+            "axes.grid": True,
+            "grid.color": "#555555",
+            "grid.linewidth": 0.5,
+            "xtick.color": "#000000",
+            "ytick.color": "#000000",
+            "axes.labelcolor": "#000000"
+            }
+        
+        if theme_name == "dark":
+            sns.set_style("dark", rc=dark)
+            return dark
+        elif theme_name == "light":
+            sns.set_style("dark", rc=light)
+            return light
+        else:
+            raise ValueError("\033[31mPlease provide a valid theme name.\033[0m")
 
 
 
 if __name__ == "__main__":
-    pass
-    # Quick example with PCA model and local server
-    # data = pd.read_csv("data/superconductivity.csv")
-    # y = pd.DataFrame(data["critical_temp"])
-    # X = data.drop(columns=["critical_temp"])
+            pass
     
-    # handler = ClusterHandler(X)
-    # handler.run_session()
-    # handler.generate_dataframe()
-
-    # handler.assemble_features()
-    # handler.scale_features()
-
-    # pca = PCA(k=5, inputCol="scaledFeatures", outputCol="pcaFeatures")
-    # pca_result = handler.fit_pca(pca)
-    # pca_result.show()
-
-    # print(handler.extract_pca_coefficients(model=pca, dimension=0))
-
-    # handler.session.stop()
