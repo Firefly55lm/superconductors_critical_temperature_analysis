@@ -146,7 +146,7 @@ class ClusterHandler():
 
         pca_result_sub = self.pca_result.select("pcaFeatures").collect()
         pca_values = [tuple(row.pcaFeatures.toArray()) for row in pca_result_sub]
-        self.pca_transposed = list(zip(*pca_values))
+        self.pca_transposed = list(zip(*pca_values)) # Generates a transposed table with the values for every PCA dimension
         
 
     def extract_pca_coefficients(self, dimension:int) -> dict:
@@ -223,27 +223,30 @@ class ClusterHandler():
 
         pca_transposed = self.pca_transposed
 
-        self.load_theme("dark")
+        # Loads the theme and prepares the 3D plotting environment
+        self.load_theme("dark") 
         fig = plt.figure(figsize=(10, 7))
         ax = fig.add_subplot(111, projection='3d')
         
+        # Assigns a dimension to every axis
         ax.set_xlabel(f'Dimension {dimensions[0]}')
         ax.set_ylabel(f'Dimension {dimensions[1]}')
         ax.set_zlabel(f'Dimension {dimensions[2]}')
         ax.set_title(f'3D PCA scatter for dimensions {dimensions[0]}, {dimensions[1]}, {dimensions[2]}', color="white")
 
         if color_by:
-            color_feature = self.data[color_by].to_numpy()
+            color_feature = self.data[color_by].to_numpy() # Extracts the values from the feature you want to color the dots with
             ax.scatter(xs=pca_transposed[dimensions[0]], ys=pca_transposed[dimensions[1]], zs=pca_transposed[dimensions[2]],
-                       c=color_feature, cmap=cmap, norm=Normalize(vmin=0, vmax=100), s=2, alpha=0.6)
+                       c=color_feature, cmap=cmap, norm=Normalize(vmin=0, vmax=100), s=2, alpha=0.6) # Generates a scatterplot
             
-            color_map = matplotlib.colormaps.get_cmap(cmap)
+            color_map = matplotlib.colormaps.get_cmap(cmap) # Loads the colormap
             legend_elements = [
                                 Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.1)), markersize=10, label='Low'),
                                 Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.5)), markersize=10, label='Medium'),
                                 Line2D([0], [0], marker='o', color='w', markerfacecolor=mcolors.to_hex(color_map(0.9)), markersize=10, label='High')
-                            ]
+                            ] # Generates a dedicated legend
 
+            # Plots the legend
             legend = ax.legend(handles=legend_elements, title=color_by, loc='upper left', labels=['Low', 'Medium', 'High'])
             for text in legend.get_texts():
                 text.set_color('white')
