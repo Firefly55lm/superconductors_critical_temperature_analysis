@@ -18,7 +18,7 @@ You can find both csv into the 'data' directory of this repository, but i sugges
 The infrastructure is meant to simulate a computer cluster to compute the models with Spark and the pyspark library.
 A masternode instance is created from the main Windows platform and 4 workernodes are connected to it, from a dedicated Docker containter each.
 
-[cluster structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/c7488811858e0c1c2109f0aab33e3128ef72c51c/pictures/simulated_cluster_architecture.png)
+![cluster structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/c7488811858e0c1c2109f0aab33e3128ef72c51c/pictures/simulated_cluster_architecture.png)
 
 To run the masternode instance on Windows, locate from the terminal the directory '%SPARKHOME%/bin' and launch the command 'spark-class org.apache.spark.deploy.master.Master'.
 You can access the Spark UI from your browser at the link given in the shell, usually at port 8080.
@@ -50,8 +50,8 @@ More interesting are the results of the PCA models. We can observe a few pattern
 about the atomic structure of the material, then the other 3 are more related to thermal and energetic information.
 We can also apreciate the fact that the main PCA's dimension has a significant discerning power of explaining the variability of the response variable.
 
-[3D PCA superconductivity](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/3D_PCA_plot_superconductivity.png)
-[2D PCA superconductivity](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/2D_PCA_plot_superconductivity.png)
+![3D PCA superconductivity](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/3D_PCA_plot_superconductivity.png)
+![2D PCA superconductivity](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/2D_PCA_plot_superconductivity.png)
 
 The findings on the molec_structure.csv data are even more particular. In fact, looking at the first five most important features, sorted by absolute value of the coeffient,
 we can observe that the first three dimensions correspond to [common categories of superconductors](https://it.wikipedia.org/wiki/Superconduttivit%C3%A0#Classificazione_chimica):
@@ -60,5 +60,5 @@ we can observe that the first three dimensions correspond to [common categories 
 - Dimension 2: fullerenes (C, Rb, K, H)
 You can find more specific information about the elements [here](https://pubchem.ncbi.nlm.nih.gov/periodic-table/).
 
-[3D PCA molecular structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/3D_PCA_plot_molec_structure.png)
-[2D PCA molecular structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/2D_PCA_plot_molec_structure.png)
+![3D PCA molecular structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/3D_PCA_plot_molec_structure.png)
+![2D PCA molecular structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/2D_PCA_plot_molec_structure.png)
