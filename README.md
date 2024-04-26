@@ -58,6 +58,7 @@ we can observe that the first three dimensions correspond to [common categories 
 - Dimension 0: cuprates (O, Cu, Ba, Y)
 - Dimension 1: metallic superconductors (As, Fe, PT)
 - Dimension 2: fullerenes (C, Rb, K, H)
+
 You can find more specific information about the elements [here](https://pubchem.ncbi.nlm.nih.gov/periodic-table/).
 
 ![3D PCA molecular structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/f0fed6c4fb482a7b868547aee09bc9a512c6ae09/pictures/3D_PCA_plot_molec_structure.png)
