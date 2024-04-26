@@ -30,13 +30,13 @@ Spark automatically parallelizes the computation over the cluster of workers. Th
 
 ## METHODOLOGY
 In the notebook of the root directory of branch main you can find the implementation of the following techniques:
-- Regularized Linear Regression: to better handle the collinearity between the features, keeping the interpretability of a simple model, I implemented
+- **Regularized Linear Regression**: to better handle the collinearity between the features, keeping the interpretability of a simple model, I implemented
 a simple regularized linear regression model, organizing a grid search to find the better hyperparameters. The latters are a reg_param, which is the lambda
 coefficient to control the shrinking of the regression's coefficients, and an elasticnet_param, which controls the regularization type. With a value of 0
 of the elasticnet parameter, an L2 regularization is performed (Ridge), with a value of 1 it's L1 regularization (Lasso) and with 0.5 is a combination of
 the other two (Elasticnet). For the evaluation, the $R^2$ metric is used, estimated with a 5-fold Cross Validation. I could not implement a more sofisticated model,
 such as a Kernel Ridge Regression, because of the lack of choise granted by pyspark;
-- PCA - Principal Component Analysis: unsupervised learning technique useful to decrease the dimensionality of the data, performed on the predictors. The plots
+- **PCA - Principal Component Analysis**: unsupervised learning technique useful to decrease the dimensionality of the data, performed on the predictors. The plots
 are colorized by the critical temperature to observe if the PCA dimensions can track a pattern to explain the Y variable.
 
 Both techniques are implemented in different notebooks for both the available csv files.
