@@ -7,11 +7,12 @@ in terms of both atomic characteristics and elements of composition. The analysi
 the pyspark library, simulating the computation on a fictitious computer cluster based on Docker containers.
 
 ## DATASET
-Data source: ["Superconductivity Data"](https://archive.ics.uci.edu/dataset/464/superconductivty+data) from [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/)
+Data source: ["Superconductivity Data"](https://archive.ics.uci.edu/dataset/464/superconductivty+data) from [UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/).
 
 The dataset contains 21263 occurrences, representing different superconductor materials. It's divided in the following two csv files:
 - **superconductivity.csv**: data about the atomic characteristics of the material (renamed from train.csv)
 - **molec_structure.csv**: data about the quantity of every element from the periodic table used to build the material (renamed from unique.csv)
+
 You can find both csv into the 'data' directory of this repository, but i suggest you to download them from the original source linked upward.
 
 ## INFRASTRUCTURE
