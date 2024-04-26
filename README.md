@@ -2,7 +2,7 @@
 
 ## ABSTRACT
 This repository contains and analysis carried on for academic purposes, related to Big Data analysis infrastructures and techniques.
-The main goal is to infer the relationship between the critical temperature of a [supercondutor](https://en.wikipedia.org/wiki/Superconductivity) material and its molecular structer,
+The main goal is to infer the relationship between the critical temperature of a [supercondutor](https://en.wikipedia.org/wiki/Superconductivity) material and its molecular structure,
 in terms of both atomic characteristics and elements of composition. The analysis consists in the usage of machine learning models from
 the pyspark library, simulating the computation on a fictitious computer cluster based on Docker containers.
 
