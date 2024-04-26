@@ -1,5 +1,4 @@
-# INFERENTIAL ANALYSIS OF THE CRITICAL TEMPERATURE IN SUPERCONDUCTORS
-
+# INFERENTIAL ANALYSIS OF THE CRITICAL TEMPERATURE IN SUPERCONDUCTORS ON DOCKER WITH SPARK
 
 ## ABSTRACT
 This repository contains and analysis carried on for academic purposes, related to Big Data analysis infrastructures and techniques.
@@ -16,7 +15,17 @@ The dataset contains 21263 occurrences, representing different superconductor ma
 You can find both csv into the 'data' directory of this repository, but i suggest you to download them from the original source linked upward.
 
 ## INFRASTRUCTURE
+The infrastructure is meant to simulate a computer cluster to compute the models with Spark and the pyspark library.
+A masternode instance is created from the main Windows platform and 4 workernodes are connected to it, from a dedicated Docker containter each.
 
+
+
+To run the masternode instance on Windows, locate from the terminal the directory '%SPARKHOME%/bin' and launch the command 'spark-class org.apache.spark.deploy.master.Master'.
+You can access the Spark UI from your browser at the link given in the shell, usually at port 8080.
+To run the workernodes from the linux container or from another hardware unit, run the command 'sudo ./start-worker.sh spark://<IP>:<port>' from your '%SPARKHOME%/sbin' directory,
+where <IP> and <port> are the IP of your masternode on your LAN and its port. 
+Then, you just need to link your pyspark session with the same IP and port and run the code.
+Spark automatically parallelizes the computation over the cluster of workers. The same result can be accomplished with a traditional computer cluster with real different hardware.
 
 ## METHODOLOGY
 In the notebook of the root directory of branch main you can find the implementation of the following techniques:
@@ -24,7 +33,7 @@ In the notebook of the root directory of branch main you can find the implementa
 a simple regularized linear regression model, organizing a grid search to find the better hyperparameters. The latters are a reg_param, which is the lambda
 coefficient to control the shrinking of the regression's coefficients, and an elasticnet_param, which controls the regularization type. With a value of 0
 of the elasticnet parameter, an L2 regularization is performed (Ridge), with a value of 1 it's L1 regularization (Lasso) and with 0.5 is a combination of
-the other two (Elasticnet). For the evaluation, the R^2 metric is used, estimated with a 5-fold Cross Validation. I could not implement a more sofisticated model,
+the other two (Elasticnet). For the evaluation, the $R^2$ metric is used, estimated with a 5-fold Cross Validation. I could not implement a more sofisticated model,
 such as a Kernel Ridge Regression, because of the lack of choise granted by pyspark;
 - PCA - Principal Component Analysis: unsupervised learning technique useful to decrease the dimensionality of the data, performed on the predictors. The plots
 are colorized by the critical temperature to observe if the PCA dimensions can track a pattern to explain the Y variable.
@@ -33,14 +42,13 @@ Both techniques are implemented in different notebooks for both the available cs
 
 ## RESULTS
 The best hyperparameters for the regularized linear regression on superconductivity.csv are a lambda of 0.001 and a Ridge regularization, with a $R^2$ of 0.735.
-On the other side, on molec_structure.csv data, the best combination is a lambda of 1 combined with a Lasso regularization, with a low R^2 of just 0.569.
+On the other side, on molec_structure.csv data, the best combination is a lambda of 1 combined with a Lasso regularization, with a low $R^2$ of just 0.569.
 
 You can find the details about the coefficients and the related features in the dedicated notebooks.
 
 More interesting are the results of the PCA models. We can observe a few patterns: in the first and main dataset, the first two dimensions are more related to informazion
 about the atomic structure of the material, then the other 3 are more related to thermal and energetic information.
 We can also apreciate the fact that the main PCA's dimension has a significant discerning power of explaining the variability of the response variable.
-
 
 The findings on the molec_structure.csv data are even more particular. In fact, looking at the first five most important features, sorted by absolute value of the coeffient,
 we can observe that the first three dimensions correspond to [common categories of superconductors](https://it.wikipedia.org/wiki/Superconduttivit%C3%A0#Classificazione_chimica):
