@@ -1,4 +1,4 @@
-# INFERENTIAL ANALYSIS OF THE CRITICAL TEMPERATURE IN SUPERCONDUCTORS ON DOCKER WITH SPARK
+# INFERENTIAL ANALYSIS OF THE CRITICAL TEMPERATURE IN SUPERCONDUCTORS WITH SPARK ON DOCKER
 
 ## ABSTRACT
 This repository contains and analysis carried on for academic purposes, related to Big Data analysis infrastructures and techniques.
