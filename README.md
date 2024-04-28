@@ -19,7 +19,7 @@ You can find both csv into the 'data' directory of this repository, but I would 
 The infrastructure is meant to simulate a computer cluster to compute the models with Spark and the [pyspark](https://spark.apache.org/docs/3.3.1/api/python/index.html#:~:text=PySpark%20is%20an%20interface%20for,data%20in%20a%20distributed%20environment.) library.
 A masternode instance is created from the main Windows platform and 4 workernodes are connected to it, from a dedicated Docker containter each.
 
-![cluster structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/b10809b914137f9a3d3e575715d1a934c787ce79/pictures/Cluster_structure.png)
+![cluster structure](https://github.com/Firefly55lm/superconductivity_lbd/blob/2d6cac1b4c88eb5c79265ba1ddcbbc7cc7a51c29/pictures/Cluster_structure.png)
 
 To run the masternode instance on Windows, locate in the terminal the directory '%SPARKHOME%/bin' and launch the command 'spark-class org.apache.spark.deploy.master.Master'.
 You can access the Spark UI from your browser at the link given in the shell, usually at port 8080.
