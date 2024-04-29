@@ -42,6 +42,8 @@ are colorized by the critical temperature to observe if the PCA dimensions can t
 Both techniques are implemented in different notebooks for both the available csv files.
 
 ## RESULTS
+The following are the most important insights of the analysis. For more details, refer to the PDF report (italian) or to the dedicated notebooks.
+
 The best hyperparameters for the regularized linear regression on superconductivity.csv are a lambda of 0.001 and a Ridge regularization, with a $R^2$ of 0.735.
 On the other side, on molec_structure.csv data, the best combination is a lambda of 1 combined with a Lasso regularization, with a low $R^2$ of just 0.569.
 
